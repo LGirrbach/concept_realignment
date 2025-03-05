@@ -1,7 +1,7 @@
 optuna:
   # num_trials: 100
   dataset: cub
-  checkpoint_save_dir: /mnt/qb/work/bethge/bkr046/CEM/checkpoints/concept_corrector_saved_models/
+  checkpoint_save_dir: ./checkpoints/concept_corrector_saved_models/
   input_size: 112
   output_size: 112
   hidden_size: 

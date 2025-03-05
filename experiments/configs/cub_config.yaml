@@ -4,7 +4,7 @@ results_dir: ./results/
 
 # DATASET VARIABLES
 dataset: cub
-root_dir: /dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/CUB_200_2011 #cem/data/CUB200/
+root_dir: cem/data/CUB200/
 batch_size: 128
 num_workers: 8
 sampling_percent: 1
