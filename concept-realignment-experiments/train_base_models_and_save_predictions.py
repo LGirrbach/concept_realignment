@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(current_file_dir, '..', 'concept-realignment-exp
 
 
 # Load Configs of the model you want to train and store predictions of
-config_file = os.path.join(current_file_dir, "..", "experiments", "configs", "cub.yaml")
+config_file = os.path.join(current_file_dir, "..", "experiments", "configs", "cub_config.yaml")
 
 
 import argparse
