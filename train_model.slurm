@@ -8,7 +8,7 @@
 #SBATCH --time=24:00:00               # Time limit hrs:min:sec (adjust as needed)
 #SBATCH --output=slurm_logs/train_cem/output/train_%j.out  # Output file (%j will be replaced by job ID)
 #SBATCH --error=slurm_logs/train_cem/error/train_%j.err   # Error log file
-#SBATCH --partition=mcml-hgx-a100-80x4-mi
+#SBATCH --partition=mcml-hgx-a100-80x4-mig
 #SBATCH --qos=mcml
 
 
