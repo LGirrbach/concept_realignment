@@ -4,7 +4,7 @@ results_dir: ./results/
 
 # DATASET VARIABLES
 dataset: cub
-root_dir: cem/data/CUB200/
+root_dir: /dss/dsshome1/04/go25kod3/projects/concept_realignment/cem/data/CUB200/
 batch_size: 128
 num_workers: 8
 sampling_percent: 1
