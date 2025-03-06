@@ -161,7 +161,8 @@ if __name__ == "__main__":
     with torch.no_grad():
         for images, labels, attrs in test_loader:
             outputs = model(images.to(device), c=attrs.to(device), y=labels.to(device))
-            print(outputs)
+            for tensor in outputs:
+                print(tensor.shape)
             break
 
     
