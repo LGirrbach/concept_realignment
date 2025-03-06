@@ -736,6 +736,100 @@ class StratifiedSampler(Sampler):
 
     def __len__(self):
         return len(self.class_vector)
+    
+
+class CUBDatasetImageLevel(Dataset):
+    def __init__(self, root: str, split: str, preprocess, uncertain_label=False):
+        self.root = root
+        self.split = split
+        self.preprocess = preprocess
+        self.class_id_to_name = dict()
+        self.uncertain_label = uncertain_label
+
+        self.uncertainty_map = {
+            1: {1:0, 2: 0.5, 3:0.75, 4:1},
+            0: {1:0, 2:0.5, 3:0.25, 4:0},
+        }
+        
+        # Load the image files
+        self.images = dict()
+        with open(os.path.join(root, "images.txt"), "r") as f:
+            for line in f:
+                image_id, image_path = line.strip().split()
+                image_id = int(image_id)
+                self.images[image_id] = os.path.join(root, "images", image_path)
+        
+        # Load the splits
+        self.splits = dict()
+        with open(os.path.join(root, "train_test_split.txt"), "r") as f:
+            for line in f:
+                image_id, split = line.strip().split()
+                image_id, split = int(image_id), int(split)
+                split = "train" if split == 1 else "test"
+                self.splits[image_id] = split
+        
+        assert len(self.images) == len(self.splits)
+
+        # Load the labels
+        self.labels = dict()
+        with open(os.path.join(root, "image_class_labels.txt"), "r") as f:
+            for line in f:
+                image_id, class_id = line.strip().split()
+                image_id, class_id = int(image_id), int(class_id)
+                self.labels[image_id] = class_id - 1
+        
+        assert len(self.images) == len(self.labels)
+        
+        # Load the label names
+        self.class_id_to_name = dict()
+        with open(os.path.join(root, "classes.txt"), "r") as f:
+            for line in f:
+                class_id, class_name = line.strip().split()
+                class_id = int(class_id) - 1
+                self.class_id_to_name[class_id] = class_name
+        
+        # Load the bird attributes
+        self.attributes = defaultdict(dict)
+        self.confidence = defaultdict(dict)
+        all_attribute_ids = set()
+        with open(os.path.join(root, "attributes","image_attribute_labels_clean.txt"), "r") as f:
+            for line in f:
+                image_id, attribute_id, is_present, confidence, _ = line.strip().split()
+                image_id, attribute_id = int(image_id), int(attribute_id)
+                is_present = bool(int(is_present))
+                self.attributes[image_id][attribute_id] = is_present
+                self.confidence[image_id][attribute_id] = float(confidence)
+                all_attribute_ids.add(attribute_id)
+        
+        self.attributes = {image_id: [self.attributes[image_id][attribute_id] for attribute_id in sorted(all_attribute_ids)] for image_id in self.images}
+        self.confidence = {image_id: [self.confidence[image_id][attribute_id] for attribute_id in sorted(all_attribute_ids)] for image_id in self.images}
+
+        # Make a list containing the image ids
+        self.image_ids = list([image_id for image_id in self.images if self.splits[image_id] == self.split])
+    
+    def __len__(self):
+        return len(self.image_ids)
+    
+    def __getitem__(self, index):
+        image_id = self.image_ids[index]
+        image = Image.open(self.images[image_id]).convert("RGB")
+        image = self.preprocess(image)
+        class_label = self.labels[image_id]
+        attrs = [attr_id for attr_id in self.attributes[image_id] if attr_id in SELECTED_CONCEPTS]
+        confidences = [self.confidence[image_id][attr_id] for attr_id in attrs]
+        if self.uncertain_label:
+            certainty = confidences
+            attr_label = attrs
+            uncertainty_label = []
+            for c, l in zip(certainty, attr_label):
+                uncertainty_label.append(self.uncertainty_map[l][c])
+            attr_label = uncertainty_label
+        else:
+            attr_label = attrs
+        
+        img = image
+        return img, class_label, torch.FloatTensor(attr_label)
+
 
 class CUBDataset(Dataset):
     """
@@ -913,6 +1007,7 @@ def load_data(
     label_transform=None,
     path_transform=None,
     is_chexpert=False,
+    image_level=False,
 ):
     """
     Note: Inception needs (299,299,3) images with inputs scaled between -1 and 1
@@ -952,19 +1047,33 @@ def load_data(
                 transforms.Normalize(mean = [0.5, 0.5, 0.5], std = [2, 2, 2])
             ])
 
-    dataset = CUBDataset(
-        pkl_file_paths=pkl_paths,
-        use_attr=use_attr,
-        no_img=no_img,
-        uncertain_label=uncertain_label,
-        image_dir=image_dir,
-        n_class_attr=n_class_attr,
-        transform=transform,
-        root_dir=root_dir,
-        concept_transform=concept_transform,
-        label_transform=label_transform,
-        path_transform=path_transform,
-    )
+    if image_level:
+        if "train" in pkl_paths[0]:
+            split = "train"
+        elif "val" in pkl_paths[0]:
+            split = "val"
+        else:
+            split = "test"
+        dataset = CUBDatasetImageLevel(
+            root=root_dir,
+            split=split,
+            preprocess=transform,
+            uncertain_label=uncertain_label,
+        )
+    else:
+        dataset = CUBDataset(
+            pkl_file_paths=pkl_paths,
+            use_attr=use_attr,
+            no_img=no_img,
+            uncertain_label=uncertain_label,
+            image_dir=image_dir,
+            n_class_attr=n_class_attr,
+            transform=transform,
+            root_dir=root_dir,
+            concept_transform=concept_transform,
+            label_transform=label_transform,
+            path_transform=path_transform,
+        )
     if is_training:
         # drop_last = True
         drop_last = False
@@ -1132,6 +1241,7 @@ def generate_data(
         root_dir=root_dir,
         num_workers=config['num_workers'],
         concept_transform=concept_transform,
+        image_level=config.get('image_level', False),
     )
     val_dl = load_data(
         pkl_paths=[val_data_path],
@@ -1145,6 +1255,7 @@ def generate_data(
         root_dir=root_dir,
         num_workers=config['num_workers'],
         concept_transform=concept_transform,
+        image_level=config.get('image_level', False),
     )
 
     test_dl = load_data(
@@ -1159,6 +1270,7 @@ def generate_data(
         root_dir=root_dir,
         num_workers=config['num_workers'],
         concept_transform=concept_transform,
+        image_level=config.get('image_level', False),
     )
     if not output_dataset_vars:
         return train_dl, val_dl, test_dl, imbalance
