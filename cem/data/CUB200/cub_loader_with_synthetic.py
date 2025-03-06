@@ -743,6 +743,7 @@ class StratifiedSampler(Sampler):
 
 class SyntheticDataset(IterableDataset):
     def __init__(self, path_to_csv: str, prefix: str, prefix_substitute: str):
+        import numpy as np
         self.data = pd.read_csv(path_to_csv, names=["path", "attribute", "confidence", "class"])
         self.prefix = prefix
         self.prefix_substitute = prefix_substitute
@@ -762,7 +763,7 @@ class SyntheticDataset(IterableDataset):
                 elif concept_name.startswith(attr):
                     attr_label.append(0)
                 else:
-                    attr_label.append(-float('inf'))
+                    attr_label.append(np.inf)
 
             self.samples.append(
                 {
@@ -772,7 +773,8 @@ class SyntheticDataset(IterableDataset):
                     "uncertain_attribute_label": attr_label,
                 }
             )
-
+            attr_label = torch.FloatTensor(attr_label).clamp(min=0, max=1)
+            attr_label[attr_label == np.inf] = -1.0
 
     def __iter__(self):
         return cycle(self.samples)
@@ -819,7 +821,7 @@ class CUBDataset(Dataset):
 
         print("USING CUB SYNTHETIC DATASET")
         self.synthetic_data = SyntheticDataset(
-            path_to_csv="/dss/dsshome1/04/go25kod3/projects/concept_realignment/dataset_subsets/our_dataset_20_per_pairing_easy_train.csv",
+            path_to_csv=f"/dss/dsshome1/04/go25kod3/projects/concept_realignment/dataset_subsets/our_dataset_20_per_pairing_easy_{'train' if self.is_train else 'test'}.csv",
             prefix="/lustre/groups/akata/code/bader/diffusion-noise-blending/",
             prefix_substitute="/dss/dsshome1/04/go25kod3/projects/concept_realignment/iccv_synthetic_images/"
         )
