@@ -71,9 +71,17 @@ def compute_accuracy(
     y_probs = torch.nn.Softmax(dim=-1)(y_pred).cpu().detach()
 #     used_classes = np.unique(y_true.cpu().detach())
 #     y_probs = y_probs[:, sorted(list(used_classes))]
-    y_pred = y_pred.argmax(dim=-1).cpu().detach()
-    y_true = y_true.cpu().detach()
+    y_pred = y_pred.argmax(dim=-1).cpu().detach().tolist()
+    y_true = y_true.cpu().detach().tolist()
 
+    y_true_, y_pred_ = list(), list()
+    for y_true_elem, y_pred_elem in zip(y_true, y_pred):
+        if y_true_elem < 200:
+            y_true_.append(y_true_elem)
+            y_pred_.append(y_pred_elem)
+            
+    y_true = y_true_
+    y_pred = y_pred_
     c_accuracy = c_auc = c_f1 = 0
     for i in range(c_true.shape[-1]):
         true_vars = c_true[:, i]
