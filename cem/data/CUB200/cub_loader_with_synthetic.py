@@ -833,9 +833,10 @@ class CUBDataset(Dataset):
 
     def __getitem__(self, idx):
         if idx < len(self.data):
+            img_data = next(self.synthetic_data_iter)
             img_data = self.data[idx]
         else:
-            img_data = next(self.synthetic_data_iter)
+            img_data = self.data[idx - len(self.data)]
 
         img_path = img_data['img_path']
         if self.path_transform == None:
