@@ -19,7 +19,7 @@ class PatchedBCELoss(torch.nn.Module):
 
     def forward(self, input, target):
         target_inf_mask = target < 0
-        target[target_inf_mask] = 0.5
+        target = torch.where(target_inf_mask, torch.zeros_like(target), target)
         target_finite_mask = torch.logical_not(target_inf_mask).flatten()
         pointwise_loss = self.bce(input, target).flatten()
         masked_loss = torch.masked_select(pointwise_loss, target_finite_mask)
