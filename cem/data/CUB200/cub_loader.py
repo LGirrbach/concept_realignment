@@ -739,7 +739,7 @@ class StratifiedSampler(Sampler):
     
 
 class CUBDatasetImageLevel(Dataset):
-    def __init__(self, root: str, split: str, preprocess, uncertain_label=False):
+    def __init__(self, pkl_file_paths: list, root: str, split: str, preprocess, uncertain_label=False):
         self.root = "/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/CUB_200_2011"
         self.split = split
         self.preprocess = preprocess
@@ -750,6 +750,12 @@ class CUBDatasetImageLevel(Dataset):
             1: {1:0, 2: 0.5, 3:0.75, 4:1},
             0: {1:0, 2:0.5, 3:0.25, 4:0},
         }
+
+        pickle_data = []
+        for pkl_file_path in pkl_file_paths:
+            with open(pkl_file_path, 'rb') as f:
+                pickle_data.extend(pickle.load(f))
+        img_paths = [data['img_path'].replace('/juice/scr/scr102/scr/thaonguyen/CUB_supervision/datasets/', self.root) for data in pickle_data]
         
         # Load the image files
         self.images = dict()
@@ -805,7 +811,8 @@ class CUBDatasetImageLevel(Dataset):
         self.confidence = {image_id: [self.confidence[image_id][attribute_id] for attribute_id in sorted(all_attribute_ids)] for image_id in self.images}
 
         # Make a list containing the image ids
-        self.image_ids = list([image_id for image_id in self.images if self.splits[image_id] == self.split])
+        self.image_ids = list([image_id for image_id in self.images if self.images[image_id] in img_paths])
+        assert len(self.image_ids) > 0, "No images found in the dataset"
     
     def __len__(self):
         return len(self.image_ids)
@@ -1055,6 +1062,7 @@ def load_data(
         else:
             split = "test"
         dataset = CUBDatasetImageLevel(
+            pkl_file_paths=pkl_paths,
             root=root_dir,
             split=split,
             preprocess=transform,
