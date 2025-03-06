@@ -837,6 +837,9 @@ class CUBDataset(Dataset):
                 else:
                     return attr_label, class_label
             else:
+                print(class_label)
+                print(attr_label)
+                exit()
                 return img, class_label, torch.FloatTensor(attr_label)
         else:
             return img, class_label
