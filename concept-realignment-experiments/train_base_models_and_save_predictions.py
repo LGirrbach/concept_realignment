@@ -16,8 +16,6 @@ sys.path.insert(0, os.path.join(current_file_dir, '..'))
 sys.path.insert(0, os.path.join(current_file_dir, '..', 'experiments'))
 sys.path.insert(0, os.path.join(current_file_dir, '..', 'concept-realignment-experiments'))
 
-print(sys.argv)
-
 
 # Load Configs of the model you want to train and store predictions of
 #config_file = os.path.join(current_file_dir, "..", "experiments", "configs", "cub_config.yaml")

@@ -771,6 +771,10 @@ class CUBDataset(Dataset):
         self.path_transform = path_transform
 
         print("UNCERTAIN LABEL:", uncertain_label)
+        self.uncertainty_map = {
+            1: {1:0, 2: 0.5, 3:0.75, 4:1},
+            0: {1:0, 2:0.5, 3:0.25, 4:0},
+        }
 
     def __len__(self):
         return len(self.data)
@@ -824,7 +828,12 @@ class CUBDataset(Dataset):
 
         if self.use_attr:
             if self.uncertain_label:
+                certainty = img_data["attribute_certainty"]
                 attr_label = img_data['uncertain_attribute_label']
+                uncertainty_label = []
+                for c, l in zip(certainty, attr_label):
+                    uncertainty_label.append(self.uncertainty_map[l][c])
+                attr_label = uncertainty_label
             else:
                 attr_label = img_data['attribute_label']
             if self.concept_transform is not None:
