@@ -243,7 +243,7 @@ class ConceptEmbeddingModel(ConceptBottleneckModel):
         from cem.models.cbm import PatchedBCELoss
         self.loss_concept = PatchedBCELoss(weight=weight_loss)
         self.loss_task = (
-            torch.nn.CrossEntropyLoss(weight=task_class_weights)
+            torch.nn.CrossEntropyLoss(weight=task_class_weights, ignore_index=200)
             if n_tasks > 1 else torch.nn.BCEWithLogitsLoss(
                 weight=task_class_weights
             )
