@@ -155,7 +155,7 @@ if __name__ == "__main__":
     model.to(device)
     transform = load_transform()
     dataset = CUBDataset(args.cub_dir, "test", transform)
-    test_loader = DataLoader(dataset, batch_size=4, shuffle=False, collate_fn=dataset.collate_fn, num_workers=0)
+    test_loader = DataLoader(dataset, batch_size=128, shuffle=False, collate_fn=dataset.collate_fn, num_workers=0)
 
     # Run inference
     model.eval()
