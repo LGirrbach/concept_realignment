@@ -1,5 +1,5 @@
 trials: 3
-results_dir: ./results/cub_uncertain_label/
+results_dir: ./results/cub_classlevel_confidence/
 
 
 # DATASET VARIABLES
