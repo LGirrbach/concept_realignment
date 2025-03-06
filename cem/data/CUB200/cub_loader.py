@@ -829,7 +829,7 @@ class CUBDataset(Dataset):
         if self.use_attr:
             if self.uncertain_label:
                 certainty = img_data["attribute_certainty"]
-                attr_label = img_data['uncertain_attribute_label']
+                attr_label = img_data['attribute_label']
                 uncertainty_label = []
                 for c, l in zip(certainty, attr_label):
                     uncertainty_label.append(self.uncertainty_map[l][c])
