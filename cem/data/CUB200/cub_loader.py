@@ -740,7 +740,7 @@ class StratifiedSampler(Sampler):
 
 class CUBDatasetImageLevel(Dataset):
     def __init__(self, root: str, split: str, preprocess, uncertain_label=False):
-        self.root = root
+        self.root = "/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/CUB_200_2011"
         self.split = split
         self.preprocess = preprocess
         self.class_id_to_name = dict()
@@ -761,7 +761,7 @@ class CUBDatasetImageLevel(Dataset):
         
         # Load the splits
         self.splits = dict()
-        with open(os.path.join(root, "train_test_split.txt"), "r") as f:
+        with open(os.path.join(self.root, "train_test_split.txt"), "r") as f:
             for line in f:
                 image_id, split = line.strip().split()
                 image_id, split = int(image_id), int(split)
@@ -772,7 +772,7 @@ class CUBDatasetImageLevel(Dataset):
 
         # Load the labels
         self.labels = dict()
-        with open(os.path.join(root, "image_class_labels.txt"), "r") as f:
+        with open(os.path.join(self.root, "image_class_labels.txt"), "r") as f:
             for line in f:
                 image_id, class_id = line.strip().split()
                 image_id, class_id = int(image_id), int(class_id)
@@ -782,7 +782,7 @@ class CUBDatasetImageLevel(Dataset):
         
         # Load the label names
         self.class_id_to_name = dict()
-        with open(os.path.join(root, "classes.txt"), "r") as f:
+        with open(os.path.join(self.root, "classes.txt"), "r") as f:
             for line in f:
                 class_id, class_name = line.strip().split()
                 class_id = int(class_id) - 1
@@ -792,7 +792,7 @@ class CUBDatasetImageLevel(Dataset):
         self.attributes = defaultdict(dict)
         self.confidence = defaultdict(dict)
         all_attribute_ids = set()
-        with open(os.path.join(root, "attributes","image_attribute_labels_clean.txt"), "r") as f:
+        with open(os.path.join(self.root, "attributes","image_attribute_labels_clean.txt"), "r") as f:
             for line in f:
                 image_id, attribute_id, is_present, confidence, _ = line.strip().split()
                 image_id, attribute_id = int(image_id), int(attribute_id)

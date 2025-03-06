@@ -4,13 +4,12 @@ results_dir: ./results/cub_imagelevel/
 
 # DATASET VARIABLES
 dataset: cub
-root_dir: /dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/CUB_200_2011
+root_dir: /dss/dsshome1/04/go25kod3/projects/concept_realignment/cem/data/CUB200/
 batch_size: 128
 num_workers: 8
 sampling_percent: 1
 test_subsampling: 1
 image_level: True
-
 
 # Intervention Parameters
 intervention_freq: 1
