@@ -11,6 +11,19 @@ from cem.metrics.accs import compute_accuracy
 ## BASELINE MODEL
 ################################################################################
 
+class PatchedBCELoss(torch.nn.Module):
+    def __init__(self, weight=None):
+        super().__init__()
+        self.weight = weight
+        self.bce = torch.nn.BCELoss(weight=weight, reduction='none')
+
+    def forward(self, input, target):
+        target_inf_mask = torch.isinf(target)
+        target_finite_mask = torch.logical_not(target_inf_mask).flatten()
+        pointwise_loss = self.bce(input, target).flatten()
+        masked_loss = torch.masked_select(pointwise_loss, target_finite_mask)
+        loss = torch.mean(masked_loss)
+        return loss
 
 class ConceptBottleneckModel(pl.LightningModule):
     def __init__(
@@ -224,7 +237,8 @@ class ConceptBottleneckModel(pl.LightningModule):
 
         print("WEIGHT LOSS = ", weight_loss)
 
-        self.loss_concept = torch.nn.BCELoss(weight=weight_loss)
+        #self.loss_concept = torch.nn.BCELoss(weight=weight_loss)
+        self.loss_concept = PatchedBCELoss(weight=weight_loss)
         self.loss_task = (
             torch.nn.CrossEntropyLoss(weight=task_class_weights)
             if n_tasks > 1 else torch.nn.BCEWithLogitsLoss(

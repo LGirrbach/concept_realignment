@@ -4,15 +4,18 @@ General utils for training, evaluation and data loading
 Adapted from: https://github.com/yewsiang/ConceptBottleneck/blob/master/CUB/cub_loader.py
 """
 import os
+import re
 import torch
 import pickle
 import numpy as np
+import pandas as pd
 import torchvision.transforms as transforms
 from pytorch_lightning import seed_everything
 from collections import defaultdict
+from itertools import cycle
 
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, IterableDataset
 
 ########################################################
 ## GENERAL DATASET GLOBAL VARIABLES
@@ -736,6 +739,50 @@ class StratifiedSampler(Sampler):
 
     def __len__(self):
         return len(self.class_vector)
+    
+
+class SyntheticDataset(IterableDataset):
+    def __init__(self, path_to_csv: str, prefix: str, prefix_substitute: str):
+        self.data = pd.read_csv(path_to_csv, names=["path", "attribute", "confidence", "class"])
+        self.prefix = prefix
+        self.prefix_substitute = prefix_substitute
+        self.samples = []
+
+        for _, row in self.data.iterrows():
+            path = row["path"].replace(self.prefix, self.prefix_substitute)
+            class_id = CLASS_NAMES.index(row["class"])
+            
+            attr_label = []
+            synthetic_concept = row["attribute"]
+            for concept_id in SELECTED_CONCEPTS:
+                concept_name = CONCEPT_SEMANTICS[concept_id]
+                attr, _ = re.split("::", synthetic_concept)
+                if concept_name == synthetic_concept:
+                    attr_label.append(1)
+                elif concept_name.startswith(attr):
+                    attr_label.append(0)
+                else:
+                    attr_label.append(-float('inf'))
+
+            self.samples.append(
+                {
+                    "img_path": path,
+                    "class_label": class_id,
+                    "attribute_label": attr_label,
+                    "uncertain_attribute_label": attr_label,
+                }
+            )
+
+
+    def __iter__(self):
+        return cycle(self.samples)
+    
+    def __len__(self):
+        return len(self.data)
+    
+
+    
+    
 
 class CUBDataset(Dataset):
     """
@@ -770,11 +817,23 @@ class CUBDataset(Dataset):
         self.root_dir = root_dir
         self.path_transform = path_transform
 
+        self.synthetic_data = SyntheticDataset(
+            path_to_csv="/dss/dsshome1/04/go25kod3/projects/concept_realignment/dataset_subsets/our_dataset_20_per_pairing_easy_train.csv",
+            prefix="/lustre/groups/akata/code/bader/diffusion-noise-blending/",
+            prefix_substitute="/dss/dsshome1/04/go25kod3/projects/concept_realignment/iccv_synthetic_images/"
+        )
+        self.synthetic_data_iter = iter(self.synthetic_data)
+
+
     def __len__(self):
-        return len(self.data)
+        return 2 * len(self.data)
 
     def __getitem__(self, idx):
-        img_data = self.data[idx]
+        if idx < len(self.data):
+            img_data = self.data[idx]
+        else:
+            img_data = next(self.synthetic_data_iter)
+
         img_path = img_data['img_path']
         if self.path_transform == None:
             img_path = img_path.replace(

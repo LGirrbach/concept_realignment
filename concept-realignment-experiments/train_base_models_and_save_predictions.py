@@ -44,6 +44,7 @@ from cem.data.synthetic_loaders import (
 import cem.data.celeba_loader as celeba_data_module
 import cem.data.chexpert_loader as chexpert_data_module
 import cem.data.CUB200.cub_loader as cub_data_module
+import cem.data.CUB200.cub_loader_with_synthetic as cub_data_module_synthetic
 import cem.data.derm_loader as derm_data_module
 import cem.data.mnist_add as mnist_data_module
 import cem.data.awa2_loader as awa2_data_module
@@ -94,6 +95,9 @@ if loaded_config.get("dataset", None) is None:
 if loaded_config["dataset"] == "cub":
     data_module = cub_data_module
     args.project_name = args.project_name.format(ds_name="cub")
+elif loaded_config["dataset"] == "cub_synthetic":
+    data_module = cub_data_module_synthetic
+    args.project_name = args.project_name.format(ds_name="cub_synthetic")
 elif loaded_config["dataset"] == "derm":
     data_module = derm_data_module
     args.project_name = args.project_name.format(ds_name="derma")
