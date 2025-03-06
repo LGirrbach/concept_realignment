@@ -866,7 +866,7 @@ class CUBDataset(Dataset):
                 if img is None:
                     raise ValueError(f"Failed to fetch {img_path} after 5 trials!")
             except:
-                if img.path.startswith("/dss/"):
+                if img_path.startswith("/dss/"):
                     img = Image.open(img_path).convert("RGB")
                 else:
                     img_path_split = img_path.split('/')
