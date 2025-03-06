@@ -96,6 +96,7 @@ if loaded_config["dataset"] == "cub":
     data_module = cub_data_module
     args.project_name = args.project_name.format(ds_name="cub")
 elif loaded_config["dataset"] == "cub_synthetic":
+    print("USING CUB SYNTHETIC DATASET")
     data_module = cub_data_module_synthetic
     args.project_name = args.project_name.format(ds_name="cub_synthetic")
 elif loaded_config["dataset"] == "derm":

@@ -817,6 +817,7 @@ class CUBDataset(Dataset):
         self.root_dir = root_dir
         self.path_transform = path_transform
 
+        print("USING CUB SYNTHETIC DATASET")
         self.synthetic_data = SyntheticDataset(
             path_to_csv="/dss/dsshome1/04/go25kod3/projects/concept_realignment/dataset_subsets/our_dataset_20_per_pairing_easy_train.csv",
             prefix="/lustre/groups/akata/code/bader/diffusion-noise-blending/",
