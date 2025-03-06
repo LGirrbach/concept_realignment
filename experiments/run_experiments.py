@@ -624,6 +624,7 @@ def _build_arg_parser():
         '--dataset',
         choices=[
             'cub',
+            'cub_synthetic',
             'celeba',
             'xor',
             'vector',
