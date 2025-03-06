@@ -770,6 +770,8 @@ class CUBDataset(Dataset):
         self.root_dir = root_dir
         self.path_transform = path_transform
 
+        print("UNCERTAIN LABEL:", uncertain_label)
+
     def __len__(self):
         return len(self.data)
 
@@ -1114,7 +1116,7 @@ def generate_data(
         use_attr=True,
         no_img=False,
         batch_size=config['batch_size'],
-        uncertain_label=False,
+        uncertain_label=config.get('uncertain_label', False),
         n_class_attr=2,
         image_dir='images',
         resampling=False,
@@ -1127,7 +1129,7 @@ def generate_data(
         use_attr=True,
         no_img=False,
         batch_size=config['batch_size'],
-        uncertain_label=False,
+        uncertain_label=config.get('uncertain_label', False),
         n_class_attr=2,
         image_dir='images',
         resampling=False,
@@ -1141,7 +1143,7 @@ def generate_data(
         use_attr=True,
         no_img=False,
         batch_size=config['batch_size'],
-        uncertain_label=False,
+        uncertain_label=config.get('uncertain_label', False),
         n_class_attr=2,
         image_dir='images',
         resampling=False,

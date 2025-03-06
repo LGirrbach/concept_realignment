@@ -141,7 +141,8 @@ def train_model(
             project=project_name,
             name=full_run_name,
             config=config,
-            reinit=True
+            reinit=True,
+            mode="disabled"
         ) as run:
             model_saved_path = os.path.join(
                 result_dir,
