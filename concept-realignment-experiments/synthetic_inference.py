@@ -166,15 +166,17 @@ if __name__ == "__main__":
         for images, labels, attrs in tqdm(test_loader):
             outputs = model(images.to(device), c=attrs.to(device), y=labels.to(device))
             c_sem, _, y_pred = outputs
+            y_pred = y_pred.argmax(dim=1).cpu().tolist()
+
             predicted_attrs.extend(c_sem.cpu().numpy())
-            predicted_labels.extend(y_pred.cpu().numpy())
+            predicted_labels.extend(y_pred)
             true_attrs.extend(attrs.cpu().numpy())
-            true_labels.extend(labels.cpu().numpy())
+            true_labels.extend(labels.cpu().tolist())
     
     predicted_attrs = np.concatenate(predicted_attrs, axis=0)
     true_attrs = np.concatenate(true_attrs, axis=0)
-    predicted_labels = np.concatenate(predicted_labels, axis=0)
-    true_labels = np.concatenate(true_labels, axis=0)
+    predicted_labels = np.array(predicted_labels)
+    true_labels = np.array(true_labels)
 
     # Save the results
     np.savez("synthetic_inference_results.npz", predicted_attrs=predicted_attrs, true_attrs=true_attrs, predicted_labels=predicted_labels, true_labels=true_labels)
