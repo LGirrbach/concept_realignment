@@ -768,7 +768,7 @@ class SyntheticDataset(IterableDataset):
             self.samples.append(
                 {
                     "img_path": path,
-                    "class_label": class_id,
+                    "class_label": N_CLASSES,
                     "attribute_label": attr_label,
                     "uncertain_attribute_label": attr_label,
                 }
@@ -1222,5 +1222,5 @@ def generate_data(
         val_dl,
         test_dl,
         imbalance,
-        (n_concepts, N_CLASSES, concept_group_map),
+        (n_concepts, N_CLASSES + 1, concept_group_map),
     )
