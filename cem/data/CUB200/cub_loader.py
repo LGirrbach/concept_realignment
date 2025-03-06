@@ -815,8 +815,8 @@ class CUBDatasetImageLevel(Dataset):
         image = Image.open(self.images[image_id]).convert("RGB")
         image = self.preprocess(image)
         class_label = self.labels[image_id]
-        attrs = [attr_id for attr_id in self.attributes[image_id] if attr_id in SELECTED_CONCEPTS]
-        confidences = [self.confidence[image_id][attr_id] for attr_id in attrs]
+        attrs = [self.attributes[image_id][attr_id] for attr_id in SELECTED_CONCEPTS]
+        confidences = [self.confidence[image_id][attr_id] for attr_id in SELECTED_CONCEPTS]
         if self.uncertain_label:
             certainty = confidences
             attr_label = attrs
