@@ -755,7 +755,7 @@ class CUBDatasetImageLevel(Dataset):
         for pkl_file_path in pkl_file_paths:
             with open(pkl_file_path, 'rb') as f:
                 pickle_data.extend(pickle.load(f))
-        img_paths = [data['img_path'].replace('/juice/scr/scr102/scr/thaonguyen/CUB_supervision/datasets/', self.root) for data in pickle_data]
+        img_paths = [data['img_path'].replace('/juice/scr/scr102/scr/thaonguyen/CUB_supervision/datasets/CUB_200_2011', self.root) for data in pickle_data]
         
         # Load the image files
         self.images = dict()
