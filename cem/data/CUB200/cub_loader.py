@@ -812,6 +812,7 @@ class CUBDatasetImageLevel(Dataset):
 
         # Make a list containing the image ids
         self.image_ids = list([image_id for image_id in self.images if self.images[image_id] in img_paths])
+        print(pkl_file_paths, len(self.image_ids))
         assert len(self.image_ids) > 0, "No images found in the dataset"
     
     def __len__(self):
