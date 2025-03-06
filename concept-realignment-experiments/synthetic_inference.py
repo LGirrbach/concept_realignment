@@ -19,7 +19,7 @@ import torch
 import yaml
 import os
 import argparse
-
+import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
@@ -158,12 +158,23 @@ if __name__ == "__main__":
 
     # Run inference
     model.eval()
+
+    predicted_attrs, true_attrs = [], []
+    predicted_labels, true_labels = [], []
     with torch.no_grad():
         for images, labels, attrs in test_loader:
             outputs = model(images.to(device), c=attrs.to(device), y=labels.to(device))
-            for tensor in outputs:
-                print(tensor.shape)
-            break
+            c_sem, _, y_pred = outputs
+            predicted_attrs.extend(c_sem.cpu().numpy())
+            predicted_labels.extend(y_pred.cpu().numpy())
+            true_attrs.extend(attrs.cpu().numpy())
+            true_labels.extend(labels.cpu().numpy())
+    
+    predicted_attrs = np.concatenate(predicted_attrs, axis=0)
+    true_attrs = np.concatenate(true_attrs, axis=0)
+    predicted_labels = np.concatenate(predicted_labels, axis=0)
+    true_labels = np.concatenate(true_labels, axis=0)
 
-    
-    
+    # Save the results
+    np.savez("synthetic_inference_results.npz", predicted_attrs=predicted_attrs, true_attrs=true_attrs, predicted_labels=predicted_labels, true_labels=true_labels)
+
