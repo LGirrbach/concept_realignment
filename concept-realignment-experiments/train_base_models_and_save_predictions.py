@@ -64,6 +64,8 @@ parser = _build_arg_parser()
 args = parser.parse_args("")
 
 #args.config = config_file
+print(args.config)
+print(args)
 
 if args.project_name:
     # Lazy import to avoid importing unless necessary
