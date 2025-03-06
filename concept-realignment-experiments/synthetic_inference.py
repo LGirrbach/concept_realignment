@@ -28,6 +28,7 @@ from cem.data.CUB200.cub_loader import SELECTED_CONCEPTS
 from collections import defaultdict
 from typing import Callable
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 class CUBDataset(Dataset):
     def __init__(self, root: str, split: str, preprocess: Callable):
@@ -162,7 +163,7 @@ if __name__ == "__main__":
     predicted_attrs, true_attrs = [], []
     predicted_labels, true_labels = [], []
     with torch.no_grad():
-        for images, labels, attrs in test_loader:
+        for images, labels, attrs in tqdm(test_loader):
             outputs = model(images.to(device), c=attrs.to(device), y=labels.to(device))
             c_sem, _, y_pred = outputs
             predicted_attrs.extend(c_sem.cpu().numpy())
