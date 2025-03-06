@@ -16,6 +16,8 @@ sys.path.insert(0, os.path.join(current_file_dir, '..'))
 sys.path.insert(0, os.path.join(current_file_dir, '..', 'experiments'))
 sys.path.insert(0, os.path.join(current_file_dir, '..', 'concept-realignment-experiments'))
 
+print(sys.argv)
+
 
 # Load Configs of the model you want to train and store predictions of
 #config_file = os.path.join(current_file_dir, "..", "experiments", "configs", "cub_config.yaml")
@@ -61,7 +63,7 @@ from experiment_utils import (
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 parser = _build_arg_parser()
-args = parser.parse_args("")
+args = parser.parse_args()
 
 #args.config = config_file
 print(args.config)
