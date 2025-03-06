@@ -866,10 +866,13 @@ class CUBDataset(Dataset):
                 if img is None:
                     raise ValueError(f"Failed to fetch {img_path} after 5 trials!")
             except:
-                img_path_split = img_path.split('/')
-                split = 'train' if self.is_train else 'test'
-                img_path = '/'.join(img_path_split[:2] + [split] + img_path_split[2:])
-                img = Image.open(img_path).convert('RGB')
+                if img.path.startswith("/dss/"):
+                    img = Image.open(img_path).convert("RGB")
+                else:
+                    img_path_split = img_path.split('/')
+                    split = 'train' if self.is_train else 'test'
+                    img_path = '/'.join(img_path_split[:2] + [split] + img_path_split[2:])
+                    img = Image.open(img_path).convert('RGB')
         else:
             img_path = self.path_transform(img_path)
             img = Image.open(img_path).convert('RGB')
