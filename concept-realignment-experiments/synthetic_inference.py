@@ -201,6 +201,7 @@ if __name__ == "__main__":
             outputs = model(images.to(device), c=None, y=None)
             c_sem, _, y_pred = outputs
             y_pred = y_pred.argmax(dim=1).cpu().tolist()
+            c_sem = c_sem.cpu()
 
             for image_path, c_sem_, yhat in zip(image_paths, c_sem, y_pred):
                 predicted_label = CLASS_NAMES[yhat]
@@ -216,7 +217,7 @@ if __name__ == "__main__":
                         {
                             "image_path": image_path,
                             "attr_name": attr_name,
-                            "attr_value": attr_value
+                            "attr_value": attr_value.item()
                         }
                     )
 
