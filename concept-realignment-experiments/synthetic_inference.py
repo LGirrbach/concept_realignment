@@ -29,6 +29,7 @@ from collections import defaultdict
 from typing import Callable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from attribute_semantics import CONCEPT_SEMANTICS, SELECTED_CONCEPTS, CLASS_NAMES
 
 class CUBDataset(Dataset):
     def __init__(self, root: str, split: str, preprocess: Callable):
@@ -134,12 +135,12 @@ class SUBDataset(Dataset):
         image_path = self.image_paths[index]
         image = Image.open(image_path).convert("RGB")
         image = self.preprocess(image)
-        return image, None, None
+        return image, image_path
     
     def collate_fn(self, batch):
-        images, _, _ = zip(*batch)
+        images, image_paths = zip(*batch)
         images = torch.stack(images)
-        return images
+        return images, image_paths
         
         
 
@@ -194,18 +195,34 @@ if __name__ == "__main__":
 
     predicted_attrs = []
     predicted_labels = []
+
     with torch.no_grad():
-        for images in tqdm(test_loader):
+        for images, image_paths in tqdm(test_loader):
             outputs = model(images.to(device), c=None, y=None)
             c_sem, _, y_pred = outputs
             y_pred = y_pred.argmax(dim=1).cpu().tolist()
 
-            predicted_attrs.extend(c_sem.cpu().numpy())
-            predicted_labels.extend(y_pred)
-    
-    predicted_attrs = np.concatenate(predicted_attrs, axis=0)
-    predicted_labels = np.array(predicted_labels)
+            for image_path, c_sem_, yhat in zip(image_paths, c_sem, y_pred):
+                predicted_label = CLASS_NAMES[yhat]
+                predicted_labels.append(
+                    {
+                        "image_path": image_path,
+                        "label": predicted_label
+                    }
+                )
+                for attr_id, attr_value in enumerate(c_sem_):
+                    attr_name = CONCEPT_SEMANTICS[SELECTED_CONCEPTS[attr_id]]
+                    predicted_attrs.append(
+                        {
+                            "image_path": image_path,
+                            "attr_name": attr_name,
+                            "attr_value": attr_value
+                        }
+                    )
 
-    # Save the results
-    np.savez(f"{args.name}_inference_results.npz", predicted_attrs=predicted_attrs, predicted_labels=predicted_labels)
+    import pandas as pd
+    predicted_attrs = pd.DataFrame(predicted_attrs)
+    predicted_labels = pd.DataFrame(predicted_labels)
+    predicted_attrs.to_csv(f"{args.name}_predicted_attrs.csv", index=False)
+    predicted_labels.to_csv(f"{args.name}_predicted_labels.csv", index=False)
 
