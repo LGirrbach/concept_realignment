@@ -192,8 +192,8 @@ if __name__ == "__main__":
     # Run inference
     model.eval()
 
-    predicted_attrs = [], []
-    predicted_labels = [], []
+    predicted_attrs = []
+    predicted_labels = []
     with torch.no_grad():
         for images in tqdm(test_loader):
             outputs = model(images.to(device), c=None, y=None)
