@@ -110,8 +110,38 @@ class CUBDataset(Dataset):
         images, labels, attrs = zip(*batch)
         images = torch.stack(images)
         labels = torch.tensor(labels).long()
-        attrs = torch.stack(attrs)  
-        return images, labels, attrs
+        attrs = torch.stack(attrs) 
+        return images
+    
+
+class SUBDataset(Dataset):
+    def __init__(self, root: str, preprocess: Callable):
+        self.root = root
+        self.preprocess = preprocess
+
+        self.image_paths = []
+        for dir, subdir, files in os.walk(root):
+            for file in files:
+                if file.endswith(".png"):
+                    self.image_paths.append(os.path.join(dir, file))
+        
+        self.image_paths = sorted(self.image_paths)
+    
+    def __len__(self):
+        return len(self.image_paths)
+    
+    def __getitem__(self, index):
+        image_path = self.image_paths[index]
+        image = Image.open(image_path).convert("RGB")
+        image = self.preprocess(image)
+        return image, None, None
+    
+    def collate_fn(self, batch):
+        images, _, _ = zip(*batch)
+        images = torch.stack(images)
+        return images
+        
+        
 
 def load_model(config: str, checkpoint: str):
     # Load config
@@ -140,6 +170,7 @@ def load_transform(resol=299):
 DEFAUT_CKPT = "/dss/dsshome1/04/go25kod3/projects/concept_realignment/concept-realignment-experiments/checkpoints/trained_model/epoch=89-step=3420.ckpt"
 DEFAULT_CONFIG = "/dss/dsshome1/04/go25kod3/projects/concept_realignment/concept-realignment-experiments/results_old/experiment_2025_03_05_17_41_config.yaml"
 DEFAULT_CUB_DIR = "/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/datasets/CUB_200_2011"
+SYNTHETIC_DIR = "/dss/dssmcmlfs01/pn39yu/pn39yu-dss-0000/projects/lgirrbach/final_images"
 
 if __name__ == "__main__":
     # Parse arguments
@@ -147,6 +178,7 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default=DEFAULT_CONFIG)
     parser.add_argument("--checkpoint", type=str, default=DEFAUT_CKPT)
     parser.add_argument("--cub-dir", type=str, default=DEFAULT_CUB_DIR)
+    parser.add_argument("--name", type=str, default="synthetic")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -154,30 +186,26 @@ if __name__ == "__main__":
     model = load_model(args.config, args.checkpoint)
     model.to(device)
     transform = load_transform()
-    dataset = CUBDataset(args.cub_dir, "test", transform)
+    dataset = SUBDataset(SYNTHETIC_DIR, transform)
     test_loader = DataLoader(dataset, batch_size=128, shuffle=False, collate_fn=dataset.collate_fn, num_workers=0)
 
     # Run inference
     model.eval()
 
-    predicted_attrs, true_attrs = [], []
-    predicted_labels, true_labels = [], []
+    predicted_attrs = [], []
+    predicted_labels = [], []
     with torch.no_grad():
-        for images, labels, attrs in tqdm(test_loader):
-            outputs = model(images.to(device), c=attrs.to(device), y=labels.to(device))
+        for images in tqdm(test_loader):
+            outputs = model(images.to(device), c=None, y=None)
             c_sem, _, y_pred = outputs
             y_pred = y_pred.argmax(dim=1).cpu().tolist()
 
             predicted_attrs.extend(c_sem.cpu().numpy())
             predicted_labels.extend(y_pred)
-            true_attrs.extend(attrs.cpu().numpy())
-            true_labels.extend(labels.cpu().tolist())
     
     predicted_attrs = np.concatenate(predicted_attrs, axis=0)
-    true_attrs = np.concatenate(true_attrs, axis=0)
     predicted_labels = np.array(predicted_labels)
-    true_labels = np.array(true_labels)
 
     # Save the results
-    np.savez("synthetic_inference_results.npz", predicted_attrs=predicted_attrs, true_attrs=true_attrs, predicted_labels=predicted_labels, true_labels=true_labels)
+    np.savez(f"{args.name}_inference_results.npz", predicted_attrs=predicted_attrs, predicted_labels=predicted_labels)
 
