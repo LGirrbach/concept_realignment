@@ -310,13 +310,13 @@ def train_model(
         checkpoint_callback = ModelCheckpoint(save_top_k=1, monitor=config["early_stopping_monitor"], mode=config["early_stopping_mode"])
         enable_checkpointing = True
         callbacks = [
-            EarlyStopping(
-                monitor=config["early_stopping_monitor"],
-                min_delta=config.get("early_stopping_delta", 0.00),
-                patience=config['patience'],
-                verbose=config.get("verbose", False),
-                mode=config["early_stopping_mode"],
-            ),
+            #EarlyStopping(
+            #    monitor=config["early_stopping_monitor"],
+            #    min_delta=config.get("early_stopping_delta", 0.00),
+            #    patience=config['patience'],
+            #    verbose=config.get("verbose", False),
+            #    mode=config["early_stopping_mode"],
+            #),
             checkpoint_callback,
         ]
 
@@ -660,13 +660,13 @@ def train_independent_and_sequential_model(
             max_epochs=config['max_epochs'],
             check_val_every_n_epoch=config.get("check_val_every_n_epoch", 5),
             callbacks=[
-                EarlyStopping(
-                    monitor=config["early_stopping_monitor"],
-                    min_delta=config.get("early_stopping_delta", 0.00),
-                    patience=config['patience'],
-                    verbose=config.get("verbose", False),
-                    mode=config["early_stopping_mode"],
-                ),
+                #EarlyStopping(
+                #    monitor=config["early_stopping_monitor"],
+                #    min_delta=config.get("early_stopping_delta", 0.00),
+                #    patience=config['patience'],
+                #    verbose=config.get("verbose", False),
+                #    mode=config["early_stopping_mode"],
+                #),
                 checkpoint_callback,
             ],
             # Only use the wandb logger when it is a fresh run
@@ -856,13 +856,13 @@ def train_independent_and_sequential_model(
                     5,
                 ),
                 callbacks=[
-                    EarlyStopping(
-                        monitor=config["early_stopping_monitor"],
-                        min_delta=config.get("early_stopping_delta", 0.00),
-                        patience=config['patience'],
-                        verbose=config.get("verbose", False),
-                        mode=config["early_stopping_mode"],
-                    ),
+                    #EarlyStopping(
+                    #    monitor=config["early_stopping_monitor"],
+                    #    min_delta=config.get("early_stopping_delta", 0.00),
+                    #    patience=config['patience'],
+                    #    verbose=config.get("verbose", False),
+                    #    mode=config["early_stopping_mode"],
+                    #),
                     checkpoint_callback,
                 ],
                 # Only use the wandb logger when it is a fresh run
@@ -910,13 +910,13 @@ def train_independent_and_sequential_model(
                     5,
                 ),
                 callbacks=[
-                    EarlyStopping(
-                        monitor=config["early_stopping_monitor"],
-                        min_delta=config.get("early_stopping_delta", 0.00),
-                        patience=config['patience'],
-                        verbose=config.get("verbose", False),
-                        mode=config["early_stopping_mode"],
-                    ),
+                    #EarlyStopping(
+                    #    monitor=config["early_stopping_monitor"],
+                    #    min_delta=config.get("early_stopping_delta", 0.00),
+                    #    patience=config['patience'],
+                    #    verbose=config.get("verbose", False),
+                    #    mode=config["early_stopping_mode"],
+                    #),
                     checkpoint_callback,
                 ],
                 # Only use the wandb logger when it is a fresh run
