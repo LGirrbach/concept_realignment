@@ -204,7 +204,6 @@ if __name__ == "__main__":
             c_sem = c_sem.cpu()
 
             for csem_, ctrue, yhat, ytrue in zip(c_sem, attrs, y_pred, labels):
-                yhat = yhat.item()
                 ytrue = ytrue.item()
                 for csem_i, ctrue_i in zip(csem_, ctrue):
                     csem_i = csem_i.item()
