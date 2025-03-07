@@ -112,7 +112,7 @@ class CUBDataset(Dataset):
         images = torch.stack(images)
         labels = torch.tensor(labels).long()
         attrs = torch.stack(attrs) 
-        return images
+        return images, labels, attrs
     
 
 class SUBDataset(Dataset):
@@ -187,43 +187,40 @@ if __name__ == "__main__":
     model = load_model(args.config, args.checkpoint)
     model.to(device)
     transform = load_transform()
-    dataset = SUBDataset(SYNTHETIC_DIR, transform)
+    # dataset = SUBDataset(SYNTHETIC_DIR, transform)
+    dataset = CUBDataset(args.cub_dir, "test", transform)
     test_loader = DataLoader(dataset, batch_size=128, shuffle=False, collate_fn=dataset.collate_fn, num_workers=0)
 
     # Run inference
     model.eval()
 
-    predicted_attrs = []
-    predicted_labels = []
+    predictions = []
 
     with torch.no_grad():
-        for images, image_paths in tqdm(test_loader):
+        for images, labels, attrs in tqdm(test_loader):
             outputs = model(images.to(device), c=None, y=None)
             c_sem, _, y_pred = outputs
             y_pred = y_pred.argmax(dim=1).cpu().tolist()
             c_sem = c_sem.cpu()
 
-            for image_path, c_sem_, yhat in zip(image_paths, c_sem, y_pred):
-                predicted_label = CLASS_NAMES[yhat]
-                predicted_labels.append(
-                    {
-                        "image_path": image_path,
-                        "label": predicted_label
-                    }
-                )
-                for attr_id, attr_value in enumerate(c_sem_):
-                    attr_name = CONCEPT_SEMANTICS[SELECTED_CONCEPTS[attr_id]]
-                    predicted_attrs.append(
+            for csem_, ctrue, yhat, ytrue in zip(c_sem, attrs, y_pred, labels):
+                yhat = yhat.item()
+                ytrue = ytrue.item()
+                for csem_i, ctrue_i in zip(csem_, ctrue):
+                    csem_i = csem_i.item()
+                    ctrue_i = ctrue_i.item()
+                    predictions.append(
                         {
-                            "image_path": image_path,
-                            "attr_name": attr_name,
-                            "attr_value": attr_value.item()
+                            "predicted_class": CLASS_NAMES[yhat],
+                            "true_class": CLASS_NAMES[ytrue],
+                            "predicted_attr": CONCEPT_SEMANTICS[SELECTED_CONCEPTS[csem_i]],
+                            "true_attr": CONCEPT_SEMANTICS[SELECTED_CONCEPTS[ctrue_i]],
+                            "predicted_attr_value": csem_i,
+                            "true_attr_value": ctrue_i
                         }
                     )
 
     import pandas as pd
-    predicted_attrs = pd.DataFrame(predicted_attrs)
-    predicted_labels = pd.DataFrame(predicted_labels)
-    predicted_attrs.to_csv(f"{args.name}_predicted_attrs.csv", index=False)
-    predicted_labels.to_csv(f"{args.name}_predicted_labels.csv", index=False)
+    df = pd.DataFrame(predictions)
+    df.to_csv(f"{args.name}_predictions.csv", index=False)
 
