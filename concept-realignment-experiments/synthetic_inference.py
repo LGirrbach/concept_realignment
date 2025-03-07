@@ -205,15 +205,14 @@ if __name__ == "__main__":
 
             for csem_, ctrue, yhat, ytrue in zip(c_sem, attrs, y_pred, labels):
                 ytrue = ytrue.item()
-                for csem_i, ctrue_i in zip(csem_, ctrue):
+                for i, (csem_i, ctrue_i) in enumerate(zip(csem_, ctrue)):
                     csem_i = csem_i.item()
                     ctrue_i = ctrue_i.item()
                     predictions.append(
                         {
                             "predicted_class": CLASS_NAMES[yhat],
                             "true_class": CLASS_NAMES[ytrue],
-                            "predicted_attr": CONCEPT_SEMANTICS[SELECTED_CONCEPTS[csem_i]],
-                            "true_attr": CONCEPT_SEMANTICS[SELECTED_CONCEPTS[ctrue_i]],
+                            "attr_id": CONCEPT_SEMANTICS[SELECTED_CONCEPTS[i]],
                             "predicted_attr_value": csem_i,
                             "true_attr_value": ctrue_i
                         }
